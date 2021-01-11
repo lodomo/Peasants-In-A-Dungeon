@@ -9,6 +9,7 @@ North = 'North'
 East = 'East'
 South = 'South'
 West = 'West'
+Cardinal_Directions = [North, South, East, West]
 
 #Rooms
 Chamber = 'Chamber'
@@ -133,7 +134,8 @@ def introduction():
         wait(0.05)
 
     clear_screen()
-    print_type('You wake up on a cold stone floor.')
+    print_type('You wake up on a cold stone floor. A voice is heard in the distance')
+    print_type('\"OI! You must be the new room checker. Can you make sure you go into all ten rooms?\"')
 
 # Keeps the user in a loop of rooms.
 def room_loop():
@@ -164,31 +166,40 @@ def room_loop():
         print_type('Which way do you want to go?')
         change_room = input().capitalize()
 
-        # Check if the input is a valid door to the room. If not, reset the prompt.
-        if change_room in current_room:
-            # Create the string to tell the user their current room.
-            string_to_print = 'You have entered the ' + current_room[change_room]
+        #Check to see if the user is going in a proper cardinal direction
+        if change_room in Cardinal_Directions:
+            # Check if the input is a valid door to the room. If not, reset the prompt.
+            if change_room in current_room:
+                # Create the string to tell the user their current room.
+                string_to_print = 'You have entered the ' + current_room[change_room]
 
-            # Add current room to list of entered rooms
-            if current_room[change_room] not in rooms_entered:
-                rooms_entered.append(current_room[change_room])
+                # Add current room to list of entered rooms
+                if current_room[change_room] not in rooms_entered:
+                    rooms_entered.append(current_room[change_room])
 
-            # Tell player the room they're about to enter
-            print_type(string_to_print)
+                # Tell player the room they're about to enter
+                print_type(string_to_print)
 
-            #Set current room
-            current_room = rooms[current_room[change_room]]
+                #Set current room
+                current_room = rooms[current_room[change_room]]
 
-            # if the user has found 10 rooms, tell them to go to the frog room.
-            # if they're in the frog room, run the finale.
-            if len(rooms_entered) == 10:
-                if current_room != rooms[FrogRoom]:
-                    print_type('Head to the Frog Room... Quickly!')
-                else:
-                    finale()
-                    break
+                # if the user has found 10 rooms, tell them to go to the frog room.
+                # if they're in the frog room, run the finale.
+                if len(rooms_entered) == 10:
+                    if current_room != rooms[FrogRoom]:
+                        print_type('Head to the FROG ROOM... Quickly!')
+                    else:
+                        finale()
+                        break
+            else:
+                print('There is no door to the ' + change_room)
+        elif change_room == 'Exit':
+            # Part of the prompt was for an exit room. Here it is. This will end the game.
+            print_type('You\'ve entered into a room called exit, there are no windows or doors')
+            print_type('You can hear your own heart beating. How long will you be trapped here?')
+            break
         else:
-            print('There is no door to the ' + change_room)
+            print_type('Sorry, You can\'t do that. Please enter a cardinal direction to move to a new room.')
 
 # This is the finale scene, you're turned into a frog.
 def finale():
