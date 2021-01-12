@@ -63,6 +63,7 @@ rooms = {
     }
 }
 
+
 # Clear The Screen
 def cls():
     if name == 'nt':
@@ -135,11 +136,39 @@ def title_art():
     input('                             PRESS ENTER TO START')
     cls()
 
+
 # Introduction to game.
+def introduction():
+    lines = ['You open your eyes, and you still see nothing but darkness.',
+             'Your hands are bound with rope.'
+             'A burlap sack is over your head.',
+             'It\'s scratchy on your nose.',
+             'Do you remain QUIET or SCREAM for help?']
+    print_strings_in_border(lines)
+    while True:
+        quiet_or_scream = input().upper()
+        if quiet_or_scream == 'QUIET':
+            quiet = ['Maybe if you remain quiet, there\'s a chance you will survive.',
+                     'You jostle from left to right. You must be in a cart of some sort.',
+                     'There is an incredibly foul stench coming through the burlap.',
+                     'The cart slows to a halt. Thoughts of terror rush through your brain.',
+                     ]
+            print_strings_in_border(quiet)
+            break
+        elif quiet_or_scream == 'SCREAM':
+            scream = ['You scream at the top of your lungs for help.',
+                      '\"OI! SHU-CHOR MOUF BACK DERE, NO\'ON CAN \'EAR YOU OUT \'ERE\"',
+                      'Before you can comprehend anything a blow to your head knocks',
+                      'you unconscious']
+            print_strings_in_border(scream)
+            break
+        else:
+            print('Sorry that is not an option right now. Do you SCREAM or keep QUIET?')
+
+    halt = ['Wakey, Wakey wee peasant.']
 
 
 if __name__ == '__main__':
-    # title_art()
-    garbage = ['i am a milk man', 'i go with the milk plan', 'cannot stop me from milk land']
-    print_strings_in_border(garbage)
+    title_art()
+    introduction()
     input()
