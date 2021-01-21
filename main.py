@@ -389,14 +389,17 @@ def game_loop():
             # Mouse Room Special
             if user_input == 'Give Cheese':
                 if Cheese in inventory:
-                    inventory.remove(Cheese)
-                    inventory.append(Hammer)
-                    current_room[Art] = current_room[GiveArt]
-                    current_room[Info] = current_room[GiveInfo]
-                    current_room[Info2] = current_room[GiveInfo2]
-                    current_room[Help] = current_room[GiveHelp]
-                    current_room[Item] = 'None'
-                    room_data(current_room[Room_Name])
+                    if Hammer in inventory:
+                        print('He\'s frozen stiff. He doesn\'t take the cheese.')
+                    else:
+                        inventory.remove(Cheese)
+                        inventory.append(Hammer)
+                        current_room[Art] = current_room[GiveArt]
+                        current_room[Info] = current_room[GiveInfo]
+                        current_room[Info2] = current_room[GiveInfo2]
+                        current_room[Help] = current_room[GiveHelp]
+                        current_room[Item] = 'None'
+                        room_data(current_room[Room_Name])
                 else:
                     print('You have no cheese to give.')
 
