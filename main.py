@@ -27,6 +27,7 @@ SkeletonRoom = 'Skeleton Room'
 MirrorRoom = 'Mirror Room'
 KeyRoom = 'Key Room'
 FrogRoom = 'Frog Room'
+BossRoom = 'Boss Room'
 
 # Room Characteristics
 Room_Name = 'Room Name'
@@ -62,6 +63,38 @@ inventory_alternatives = ['Inventory', 'Bag', 'Satchel']
 items = [Hammer, Prism, Towel, Sword, Cheese, Key, Jar]
 bad_words = ['Sword', 'Shit', 'Piss', 'Fuck', 'Cunt', 'Cocksucker', 'Motherfucker', 'Tits']
 user_input = ''
+
+# 0 is Ice, 1 is Dirt, 2 is Lock
+mirror_room_status = [True, True, True]
+
+
+def mirror_room_artwork():
+    artwork = []
+    ice = []
+    mirror = []
+    lock = []
+    if mirror_room_status[0]:
+        ice = art.ice
+    else:
+        ice = art.no_ice
+
+    if mirror_room_status[1]:
+        mirror = art.dirty_mirror
+    else:
+        mirror = art.clean_mirror
+
+    if mirror_room_status[2]:
+        lock = art.lock
+    else:
+        lock = art.broken_lock
+
+    i = 0
+    for lines in ice:
+        artwork.append(ice[i] + mirror[i] + lock[i])
+        i += 1
+
+    return artwork
+
 
 rooms = {
     Chamber: {
@@ -99,7 +132,10 @@ rooms = {
         Help: 'Your hear buzzing from inside the chest! You need to find a KEY!',
         Item: 'None',
         Art: art.chest_closed,
-        Special: 'None',
+        Special: ['Use Key'],
+        TakeArt: art.chest_open,
+        TakeInfo: 'dadadada dadadada dada... da... da... DA DA DA DAAAHHHH!',
+        TakeInfo2: 'Inside the chest is a Jar of Flies. Was this a jar of maggots before?',
         Doors: {West: Chamber}
     },
     PrismRoom: {
@@ -158,25 +194,25 @@ rooms = {
     },
     MirrorRoom: {
         Room_Name: MirrorRoom,
-        Info: 'A block of ice blocks the north door. A door with a rusted lock blocks',
-        Info2: 'the south door. A dirty mirror sits in the middle of the room',
+        Info: 'A dirty mirror sits in the middle of the room. Ice blocks the north door.',
+        Info2: 'A rusted lock stops you from going south.',
         Help: 'You should CLEAN the MIRROR, and BASH the LOCK.',
         Item: 'None',
-        Art: art.mr_ice_dm_lock,
-        'Art1': art.mr_ice_cm_lock,
-        'Art2': art.mr_cm,
-        'Art3': art.mr_ice_cm,
-        'Art4': art.mr_ice_dm,
-        'Art5': art.mr_cm_lock,
+        Art: mirror_room_artwork(),
         Special: ['Bash Lock', 'Clean Mirror'],
-        Doors: {West: SkeletonRoom, South: KeyRoom, North: FrogRoom}
+        Doors: {West: SkeletonRoom}
     },
     KeyRoom: {
         Room_Name: KeyRoom,
         Info: 'There\'s literally just a key in this room. What a waste of space!',
+        Info2: '',
         Help: 'TAKE the KEY, dingus.',
         Item: Key,
         Art: art.key,
+        TakeInfo: 'There\'s literally nothing left in this room except a dust outline.',
+        TakeArt: art.no_key,
+        TakeInfo2: 'So much room for activities!',
+        TakeHelp: 'Nothing left for you here to do.',
         Special: 'None',
         Doors: {North: MirrorRoom}
     },
@@ -187,7 +223,7 @@ rooms = {
         Help: 'Frogs eat flies. You need to feed him flies. OPEN him a JAR of flies.',
         Item: 'None',
         Art: art.frog_with_sign,
-        Special: 'None',
+        Special: 'Open Jar',
         Doors: {South: MirrorRoom}
     }
 }
@@ -321,7 +357,7 @@ def room_data(room_name):
     door_count = len(doors)
     if door_count == 1:
         print_doors = 'There is a door to the ' + list(doors)[0]
-    else:
+    elif door_count > 1:
         print_doors = 'There are ' + str(door_count) + ' doorways: '
         for door in doors:
             if door == list(doors)[-1]:
@@ -341,10 +377,10 @@ def room_data(room_name):
 
 
 def game_loop():
-    current_room = room_data(Chamber)
+    current_room = room_data(FrogRoom)
     carlin_points = 0
-    inventory = []
-
+    inventory = [Jar]
+    prism_set = False
     while True:
         user_input = input().title()
         if user_input in current_room[Doors]:
@@ -410,6 +446,7 @@ def game_loop():
                 current_room[Info] = current_room[TakeInfo]
                 current_room[Info2] = current_room[TakeInfo2]
                 current_room[Help] = current_room[TakeHelp]
+                current_room[Special] = []
                 room_data(current_room[Room_Name])
             elif user_input in bad_words:
                 carlin_points += 1
@@ -424,7 +461,17 @@ def game_loop():
                 if Prism in inventory:
                     current_room[Art] = current_room[GiveArt]
                     current_room[Info] = current_room[GiveInfo]
+                    current_room[Special].remove(user_input)
+                    prism_set = True
+                    if not mirror_room_status[0]:
+                        mirror_room_status[0] = False
+                        rooms[MirrorRoom][Info] = 'The mirror reflects the light from the other room and melts the ice!'
+                        rooms[MirrorRoom][Art] = mirror_room_artwork()
+                        rooms[MirrorRoom][Doors][North] = FrogRoom
+                    inventory.remove(Prism)
                     room_data(current_room[Room_Name])
+                else:
+                    print('You don\'t have a prism')
             elif user_input == 'Search Skeleton':
                 print('You search the pile of bones and find some cheese!')
                 print('You put the cheese in your bag.')
@@ -434,19 +481,93 @@ def game_loop():
             # Mirror Room special rules.
             if user_input == 'Clean Mirror':
                 if Towel in inventory:
-                    # TODO
-                    print()     # DELETE ME
+                    mirror_room_status[1] = False
+                    if prism_set:
+                        mirror_room_status[0] = False
+                        current_room[Info] = 'The mirror reflects the light from the other room and melts the ice!'
+                        current_room[Doors][North] = FrogRoom
+                    else:
+                        current_room[Info] = 'The mirror is hungry for light. The ice still blocks the north door.'
+                    current_room[Art] = mirror_room_artwork()
+                    current_room[Special].remove(user_input)
+                    room_data(MirrorRoom)
                 else:
                     print('You don\'t have anything to use to clean the mirror.')
+            elif user_input == 'Bash Lock':
+                if Hammer in inventory:
+                    mirror_room_status[2] = False
+                    current_room[Art] = mirror_room_artwork()
+                    current_room[Info2] = 'The lock is broken. The door is open to the south.'
+                    current_room[Doors][South] = KeyRoom
+                    current_room[Special].remove(user_input)
+                    room_data(MirrorRoom)
+                else:
+                    print('You don\'t have a Hammer')
+
+            # Chest Special Rules.
+            if user_input == 'Use Key':
+                if Key in inventory:
+                    current_room[Art] = current_room[TakeArt]
+                    current_room[Info] = current_room[TakeInfo]
+                    current_room[Info2] = current_room[TakeInfo2]
+                    current_room[Special].remove(user_input)
+                    inventory.remove(Key)
+                    inventory.append(Jar)
+                    room_data(ChestRoom)
+                else:
+                    print('You don\'t have a Key')
+
+            if user_input == 'Open Jar':
+                if Jar in inventory:
+                    inventory.remove(Jar)
+                    fall_again()
+                    break
+                else:
+                    print('You don\'t have a frog food')
         else:
             bad_input()
 
 
+def fall_again():
+    cls()
+    for i in range(10):
+        print()
+    print('                                                                                ')
+    print('   The flies quickly fly out of the jar and expand into gargantuan size.        ')
+    print('   Mr. Frog gobbles them up with ease, but as the flies grow...                 ')
+    print('   ... so does the frog. The ground starts to crack beneath your feet           ')
+    for i in range(10):
+        print()
+    print('   Looks like you\'re going to fall again.                                      ')
+    wait(8)
+
+def boss_fight():
+
+    print('Boss Fight Scene')
+    return 'Win'
+
 def bad_input():
     print('Sorry, I don\'t understand what you want to do. Type HELP if you\'re stuck')
 
+def credits():
+    # TODO
+    print('credits')
+    input()
+
+def reset_game():
+    # TODO
+    print('Reset Game')
+    input()
+
 
 if __name__ == '__main__':
-    # introduction()
-    game_loop()
+    while True:
+        # introduction()
+        game_loop()
+        boss_result = boss_fight()
+        if boss_result == 'Win':
+            break
+        else:
+            reset_game()
+    credits()
     input()
