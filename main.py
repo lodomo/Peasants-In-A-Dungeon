@@ -478,7 +478,7 @@ def game_loop():
                     current_room[Info] = current_room[GiveInfo]
                     current_room[Special].remove(user_input)
                     prism_set = True
-                    if not mirror_room_status[0]:
+                    if not mirror_room_status[1]:
                         mirror_room_status[0] = False
                         rooms[MirrorRoom][Info] = 'The mirror reflects the light from the other room and melts the ice!'
                         rooms[MirrorRoom][Art] = mirror_room_artwork()
